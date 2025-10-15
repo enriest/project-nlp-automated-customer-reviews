@@ -64,6 +64,11 @@ offline_models/**/flax_model.msgpack
 offline_models/models--roberta-base/pytorch_model.bin
 offline_models/models--distilbert-base-uncased/pytorch_model.bin
 offline_models/models--distilbert-base-uncased/blobs/
+offline_models/models--distilbert-base-uncased/blobs/5e3f1108e3cb34ee048634875d8482665b65ac713291a7e32396fb18f6ff0063.incomplete
+# General patterns for HuggingFace cache blobs
+offline_models/**/blobs/*
+**/.cache/huggingface/
+**/*.incomplete
 
 # Keep config and tokenizer files, ignore large model weights
 !offline_models/**/config.json
