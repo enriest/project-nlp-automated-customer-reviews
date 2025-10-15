@@ -43,6 +43,12 @@ checkpoints/
 outputs/
 cache/
 
+# Large files (>99.99MB) - GitHub file size limit
+# Archive data files
+archive/Datafiniti_Amazon_Consumer_Reviews_of_Amazon_Products_May19.csv
+archive/Datafiniti_Amazon_Consumer_Reviews_of_Amazon_Products.csv
+archive/*.csv
+
 # HuggingFace transformer cache and models
 .cache/
 offline_models/**/*.bin
@@ -50,6 +56,15 @@ offline_models/**/*.safetensors
 offline_models/**/*.h5
 offline_models/**/*.ot
 offline_models/**/*.msgpack
+offline_models/**/pytorch_model.bin
+offline_models/**/model.safetensors
+offline_models/**/tf_model.h5
+offline_models/**/flax_model.msgpack
+# Specific large model files identified
+offline_models/models--roberta-base/pytorch_model.bin
+offline_models/models--distilbert-base-uncased/pytorch_model.bin
+offline_models/models--distilbert-base-uncased/blobs/
+
 # Keep config and tokenizer files, ignore large model weights
 !offline_models/**/config.json
 !offline_models/**/tokenizer_config.json
@@ -95,3 +110,22 @@ htmlcov/
 # Temporary files
 temp/
 tmp/
+
+# Virtual environment (contains large libraries)
+venv/
+.venv/
+env/
+.env/
+
+# Large PyTorch libraries and cached models
+**/libtorch*.dylib
+**/libtorch*.so
+**/torch/lib/
+**/.torch/
+.pytorch/
+
+# Any file larger than ~100MB (common large file extensions)
+*.large
+*.backup
+*.dump
+*.sql
