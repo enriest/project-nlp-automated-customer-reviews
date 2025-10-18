@@ -649,6 +649,30 @@
             </div>
         </section>
 
+        <!-- Generative AI Summaries Section -->
+        <section class="section" id="generativeSection">
+            <h2 class="section-title">Generative AI Summaries</h2>
+
+            <div class="prediction-form">
+                <div class="form-group">
+                    <label class="form-label" for="categorySelect">Select Category:</label>
+                    <select id="categorySelect" class="form-input form-select" onchange="onCategoryChange()">
+                        <option value="">Loading categories...</option>
+                    </select>
+                </div>
+
+                <div class="btn-group" style="margin-top:0.5rem;">
+                    <button class="btn btn-primary" onclick="refreshSummaries()">Refresh</button>
+                </div>
+
+                <div id="generativeSummaryPreview" style="margin-top:1rem;">
+                    <div id="summaryMeta" style="margin-bottom:0.5rem;color:var(--text-secondary)"></div>
+                    <div id="ratingsSummaries"></div>
+                </div>
+            </div>
+        </section>
+
+
         <!-- Requirements Comparison -->
         <section class="section">
             <h2 class="section-title">Project Requirements Verification</h2>
@@ -1073,6 +1097,97 @@
         document.addEventListener('DOMContentLoaded', function() {
             initCharts();
         });
+
+        // Generative AI summaries loader
+        const summariesIndexPath = '/outputs/summaries/index.json';
+        let summariesIndex = null;
+
+        async function loadSummariesIndex() {
+            const candidates = [
+                summariesIndexPath,
+                './outputs/summaries/index.json',
+                '../outputs/summaries/index.json',
+                '/outputs/summaries/index.json'
+            ];
+
+            let lastErr = null;
+            for (const p of candidates) {
+                try {
+                    const res = await fetch(p);
+                    if (!res.ok) throw new Error('Not found');
+                    summariesIndex = await res.json();
+                    populateCategorySelect();
+                    return;
+                } catch (err) {
+                    lastErr = err;
+                }
+            }
+
+            console.warn('Generative summaries not available (tried paths):', candidates, lastErr);
+            const sel = document.getElementById('categorySelect');
+            sel.innerHTML = '<option value="">No summaries available</option>';
+        }
+
+        function populateCategorySelect() {
+            const sel = document.getElementById('categorySelect');
+            sel.innerHTML = '<option value="">-- Select a category --</option>';
+            if (!summariesIndex || !summariesIndex.categories) return;
+            summariesIndex.categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat.file;
+                opt.textContent = `${cat.category} (${cat.total_reviews.toLocaleString()})`;
+                sel.appendChild(opt);
+            });
+        }
+
+        async function onCategoryChange() {
+            const sel = document.getElementById('categorySelect');
+            const file = sel.value;
+            const preview = document.getElementById('generativeSummaryPreview');
+            const meta = document.getElementById('summaryMeta');
+            const ratingsDiv = document.getElementById('ratingsSummaries');
+            ratingsDiv.innerHTML = '';
+            meta.textContent = '';
+
+            if (!file) return;
+
+            try {
+                const res = await fetch(file);
+                if (!res.ok) throw new Error('Could not load category file');
+                const data = await res.json();
+                meta.textContent = `${data.category} — ${data.total_reviews.toLocaleString()} reviews`;
+
+                const ratings = data.ratings || {};
+                const keys = Object.keys(ratings).sort((a,b)=>Number(a)-Number(b));
+                keys.forEach(k => {
+                    const r = ratings[k];
+                    const section = document.createElement('div');
+                    section.className = 'recent-prediction';
+                    const header = document.createElement('div');
+                    header.innerHTML = `<strong>Rating ${k} — ${r.count.toLocaleString()} reviews</strong>`;
+                    const body = document.createElement('div');
+                    body.className = 'recent-text';
+                    body.textContent = r.summary || '(no summary)';
+                    section.appendChild(header);
+                    section.appendChild(body);
+                    ratingsDiv.appendChild(section);
+                });
+
+            } catch (err) {
+                console.error('Error loading category summary', err);
+                ratingsDiv.innerHTML = '<div class="recent-prediction">Error loading summary.</div>';
+            }
+        }
+
+        function refreshSummaries() {
+            loadSummariesIndex().then(()=>{
+                const sel = document.getElementById('categorySelect');
+                if (sel.value) onCategoryChange();
+            });
+        }
+
+        // Attempt to load on page ready
+        document.addEventListener('DOMContentLoaded', loadSummariesIndex);
     </script>
 </body>
 </html>

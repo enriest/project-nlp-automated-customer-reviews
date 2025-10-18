@@ -249,5 +249,3 @@ Notes and best practices:
 - To reproduce experiments on another machine, provide the sample CSV or a data download script and the `requirements.txt` described above.
 
 ---
-
-If you'd like, I can also: (A) add a short `scripts/download_data.sh` that documents how to fetch the original archives, (B) add a small `README` badge and short usage examples in the top-level `README.md`, or (C) insert the diagnostic cells we discussed earlier into the notebook to help debug model-specific behavior (Electra / Neutral issues). Tell me which next step you prefer.
