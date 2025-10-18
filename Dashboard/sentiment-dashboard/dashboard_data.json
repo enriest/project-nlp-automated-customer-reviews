@@ -1,0 +1,154 @@
+{
+  "project_info": {
+    "title": "Automated Customer Review Sentiment Analysis",
+    "dataset_size": 54615,
+    "models_count": 11,
+    "sentiment_classes": [
+      "Positive",
+      "Negative",
+      "Neutral"
+    ]
+  },
+  "sentiment_distribution": {
+    "Positive": 32953,
+    "Negative": 14941,
+    "Neutral": 6723
+  },
+  "traditional_ml_results": [
+    {
+      "model": "Naive Bayes",
+      "vectorizer": "Count",
+      "accuracy": 0.51,
+      "f1_score": 0.59
+    },
+    {
+      "model": "Naive Bayes",
+      "vectorizer": "TF-IDF",
+      "accuracy": 0.6,
+      "f1_score": 0.6
+    },
+    {
+      "model": "Logistic Regression",
+      "vectorizer": "Count",
+      "accuracy": 0.7,
+      "f1_score": 0.7
+    },
+    {
+      "model": "Logistic Regression",
+      "vectorizer": "TF-IDF",
+      "accuracy": 0.71,
+      "f1_score": 0.71
+    },
+    {
+      "model": "SVM",
+      "vectorizer": "Count",
+      "accuracy": 0.74,
+      "f1_score": 0.74
+    },
+    {
+      "model": "SVM",
+      "vectorizer": "TF-IDF",
+      "accuracy": 0.75,
+      "f1_score": 0.75
+    },
+    {
+      "model": "Random Forest",
+      "vectorizer": "Count",
+      "accuracy": 0.79,
+      "f1_score": 0.79
+    },
+    {
+      "model": "Random Forest",
+      "vectorizer": "TF-IDF",
+      "accuracy": 0.8,
+      "f1_score": 0.8
+    },
+    {
+      "model": "XGBoost",
+      "vectorizer": "Count",
+      "accuracy": 0.49,
+      "f1_score": 0.49
+    },
+    {
+      "model": "XGBoost",
+      "vectorizer": "TF-IDF",
+      "accuracy": 0.5,
+      "f1_score": 0.5
+    },
+    {
+      "model": "Gradient Boosting",
+      "vectorizer": "Count",
+      "accuracy": 0.76,
+      "f1_score": 0.76
+    },
+    {
+      "model": "Gradient Boosting",
+      "vectorizer": "TF-IDF",
+      "accuracy": 0.76,
+      "f1_score": 0.76
+    },
+    {
+      "model": "Extra Trees",
+      "vectorizer": "Count",
+      "accuracy": 0.37,
+      "f1_score": 0.37
+    },
+    {
+      "model": "Extra Trees",
+      "vectorizer": "TF-IDF",
+      "accuracy": 0.37,
+      "f1_score": 0.37
+    }
+  ],
+  "transformer_results": [
+    {
+      "model": "BERT",
+      "type": "Baseline",
+      "accuracy": 0.738,
+      "f1_score": 0.747
+    },
+    {
+      "model": "RoBERTa",
+      "type": "Baseline",
+      "accuracy": 0.73,
+      "f1_score": 0.734
+    },
+    {
+      "model": "DistilBERT",
+      "type": "Baseline",
+      "accuracy": 0.78,
+      "f1_score": 0.737
+    }
+  ],
+  "best_models": {
+    "traditional_ml": {
+      "name": "Random Forest (TF-IDF)",
+      "accuracy": 0.8,
+      "f1_score": 0.8,
+      "speed": "Fast"
+    },
+    "transformer": {
+      "name": "DistilBERT",
+      "accuracy": 0.78,
+      "f1_score": 0.737,
+      "speed": "Moderate"
+    }
+  },
+  "sample_reviews": [
+    {
+      "text": "This product is absolutely amazing! Best purchase ever.",
+      "actual": "Positive",
+      "predicted": "Positive"
+    },
+    {
+      "text": "Terrible quality. Very disappointed with this purchase.",
+      "actual": "Negative",
+      "predicted": "Negative"
+    },
+    {
+      "text": "It's okay, nothing special but does the job.",
+      "actual": "Neutral",
+      "predicted": "Neutral"
+    }
+  ]
+}

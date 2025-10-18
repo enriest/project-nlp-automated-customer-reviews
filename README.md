@@ -157,3 +157,97 @@ A classification model, (bonus: summarization), and a dashboard are expected in 
  
  
 - Bonus: host your app somewhere so it can be queried by anyone?
+
+## Fine-tuning, Deployment and Generative AI
+
+This section documents the additional project capabilities: fine-tuning transformer models, deploying a lightweight dashboard, and running the generative summarizer that produces per-category, per-rating summaries.
+
+### 1) Fine-tuning transformers (three-way sentiment)
+
+Notes:
+- Fine-tuning is handled by the project's `fine-tuning.py` (or the notebook cells that call a `run_fine_tuning` helper). The code uses HuggingFace `Trainer`/`TrainingArguments` and supports a 3-class setup (Negative / Neutral / Positive). Ensure you pass `num_labels=3` when instantiating `AutoModelForSequenceClassification`.
+- If you are using offline cached models, point the `from_pretrained()` calls to the local path under `offline_models/` and set `cache_dir` accordingly.
+
+Typical workflow (local):
+
+```bash
+# create venv and install deps
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# run fine-tuning (this is an example; see fine-tuning.py for arguments)
+python fine-tuning.py --model distilbert-base-uncased --num_labels 3 --output_dir outputs/models/distilbert-finetuned
+```
+
+Tips:
+- Use `num_labels=3` when creating a classification head: AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=3)
+- Handle class imbalance during training: either pass `class_weight` to the loss (see WeightedTrainer patterns) or oversample the minority class only on the training split.
+- Monitor `eval_metric` = `f1_macro` or `accuracy` and use `early_stopping_rounds` to avoid overfitting.
+
+### 2) Deployment / Dashboard
+
+There are two simple ways to serve or view results:
+
+- Static Dashboard (lite): `Dashboard/sentiment-dashboard/index.html` is a standalone HTML that visualizes pre-computed metrics and example predictions. Open it in a browser to view the project summary and static charts.
+
+- Streamlit dashboard (interactive): a minimal Streamlit app is available in `Dashboard/app.py`. It reads `outputs/summaries/index.json` and per-category JSON files from `outputs/summaries/` and provides interactive exploration.
+
+Run Streamlit locally:
+
+```bash
+# from project root, with venv active
+pip install -r requirements.txt
+streamlit run Dashboard/app.py
+```
+
+Notes:
+- The Streamlit app expects `outputs/summaries/index.json` to exist. If you ran the summarizer script, this file and the per-category JSON files will already be in `outputs/summaries/`.
+- For static hosting of the HTML dashboard, simply serve the `Dashboard/sentiment-dashboard/` folder from any static host (GitHub Pages, Netlify, etc.).
+
+### 3) Generative AI summarizer (abstractive + extractive fallback)
+
+Purpose:
+- Produce concise summaries of reviews grouped by product category and rating bucket (1..5). Useful to create a quick summary per category that explains what users say at each rating level.
+
+Files:
+- `scripts/cache_summarization_model.py` — helper to cache a HuggingFace summarization model locally into `offline_models/summarizer/<model-slug>/` for offline runs.
+- `scripts/summarize_by_category_and_rating.py` — CLI that reads CSV(s), explodes product categories, groups reviews by rating (1..5), and generates per-rating summaries using a HF summarization pipeline. It contains an extractive TF‑IDF fallback when transformers aren't available.
+- Output: writes JSON summary files to `outputs/summaries/<category-slug>.json` and creates an `outputs/summaries/index.json` pointing to available categories.
+
+Typical usage (cache model then run summarizer offline):
+
+```bash
+# 1) Cache a model for offline use (example model: sshleifer/distilbart-cnn-12-6)
+python scripts/cache_summarization_model.py --model sshleifer/distilbart-cnn-12-6 --cache-dir offline_models/summarizer/sshleifer-distilbart-cnn-12-6
+
+# 2) Run the summarizer (offline mode uses cached model path)
+python scripts/summarize_by_category_and_rating.py \
+  --input archive/1429_1.csv \
+  --top-n 5 \
+  --min-reviews 50 \
+  --max-reviews-per-rating 200 \
+  --model-name offline_models/summarizer/sshleifer-distilbart-cnn-12-6 \
+  --cache-dir offline_models/summarizer/sshleifer-distilbart-cnn-12-6 \
+  --offline
+```
+
+Notes and best practices:
+- Summarization models and weights are large — prefer caching models locally and running offline when possible.
+- The CLI has safety caps (e.g., `--max-reviews-per-rating`) to limit runtime and cost. Adjust when you have more resources.
+- If the abstractive model fails or the environment lacks `transformers`, the script falls back to an extractive TF‑IDF summarizer so you still get reasonable summaries.
+
+### Where outputs live
+
+- Generated summaries: `outputs/summaries/*.json` (one file per category). The Streamlit app and static HTML dashboard read these files.
+- Fine-tuned transformer checkpoints: `outputs/models/` (or a path you set via `--output_dir` during fine-tuning).
+- Cached HF models: `offline_models/` (weights are ignored by `.gitignore` by default; keep only config/tokenizer files committed if needed).
+
+### Large data & collaboration
+
+- The repository intentionally keeps heavy archive CSVs out of version control (see `.gitignore`). Use Git LFS for trackable large files or provide download scripts.
+- To reproduce experiments on another machine, provide the sample CSV or a data download script and the `requirements.txt` described above.
+
+---
+
+If you'd like, I can also: (A) add a short `scripts/download_data.sh` that documents how to fetch the original archives, (B) add a small `README` badge and short usage examples in the top-level `README.md`, or (C) insert the diagnostic cells we discussed earlier into the notebook to help debug model-specific behavior (Electra / Neutral issues). Tell me which next step you prefer.

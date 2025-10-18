@@ -19,7 +19,7 @@ env/
 conda-meta/
 
 # Data and model files (keep small samples, ignore large datasets)
-*.csv
+# Avoid globally ignoring all CSV/JSON files — instead ignore known large archives and allow small data in repo
 *.tsv
 *.xlsx
 *.json.gz
@@ -40,17 +40,22 @@ models/
 results/
 logs/
 checkpoints/
+# Keep outputs but ignore heavy generated artifacts by pattern if needed; allow summaries to be tracked
 outputs/
+!outputs/summaries/
+!outputs/summaries/*.json
 cache/
 
 # Large files (>99.99MB) - GitHub file size limit
-# Archive data files
+# Archive data files (explicitly ignore the huge Datafiniti CSVs but allow other small archives)
 archive/Datafiniti_Amazon_Consumer_Reviews_of_Amazon_Products_May19.csv
 archive/Datafiniti_Amazon_Consumer_Reviews_of_Amazon_Products.csv
-archive/*.csv
+# Ignore other very large CSVs in archive by size-pattern (be conservative)
+archive/*_large.csv
 
 # HuggingFace transformer cache and models
 .cache/
+# Offline cached model weights & large HF blobs (ignore weights, keep config/tokenizer files)
 offline_models/**/*.bin
 offline_models/**/*.safetensors
 offline_models/**/*.h5
@@ -60,11 +65,6 @@ offline_models/**/pytorch_model.bin
 offline_models/**/model.safetensors
 offline_models/**/tf_model.h5
 offline_models/**/flax_model.msgpack
-# Specific large model files identified
-offline_models/models--roberta-base/pytorch_model.bin
-offline_models/models--distilbert-base-uncased/pytorch_model.bin
-offline_models/models--distilbert-base-uncased/blobs/
-offline_models/models--distilbert-base-uncased/blobs/5e3f1108e3cb34ee048634875d8482665b65ac713291a7e32396fb18f6ff0063.incomplete
 # General patterns for HuggingFace cache blobs
 offline_models/**/blobs/*
 **/.cache/huggingface/
@@ -77,6 +77,7 @@ offline_models/**/blobs/*
 !offline_models/**/vocab.json
 !offline_models/**/merges.txt
 !offline_models/**/special_tokens_map.json
+!offline_models/**/tokenizer.json
 
 # Weights & Biases
 wandb/
@@ -134,3 +135,6 @@ env/
 *.backup
 *.dump
 *.sql
+
+# Ignore large archive CSVs
+archive/*.csv
